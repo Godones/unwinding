@@ -172,7 +172,7 @@ macro_rules! code {
 #[naked]
 pub extern "C-unwind" fn save_context(f: extern "C" fn(&mut Context, *mut ()), ptr: *mut ()) {
     // No need to save caller-saved registers here.
-    #[cfg(target_feature = "d")]
+    #[cfg(all(target_feature = "d", not(feature = "in-kernel")))]
     unsafe {
         core::arch::naked_asm!(
             "
@@ -196,7 +196,10 @@ pub extern "C-unwind" fn save_context(f: extern "C" fn(&mut Context, *mut ()), p
             "ret",
         );
     }
-    #[cfg(not(target_feature = "d"))]
+    #[cfg(any(
+        all(target_feature = "d", feature = "in-kernel"),
+        not(target_feature = "d")
+    ))]
     unsafe {
         core::arch::naked_asm!(
             "
@@ -222,7 +225,7 @@ pub extern "C-unwind" fn save_context(f: extern "C" fn(&mut Context, *mut ()), p
 }
 
 pub unsafe fn restore_context(ctx: &Context) -> ! {
-    #[cfg(target_feature = "d")]
+    #[cfg(all(target_feature = "d", not(feature = "in-kernel")))]
     unsafe {
         core::arch::asm!(
             code!(restore_fp),
@@ -235,7 +238,10 @@ pub unsafe fn restore_context(ctx: &Context) -> ! {
             options(noreturn)
         );
     }
-    #[cfg(not(target_feature = "d"))]
+    #[cfg(any(
+        all(target_feature = "d", feature = "in-kernel"),
+        not(target_feature = "d")
+    ))]
     unsafe {
         core::arch::asm!(
             code!(restore_gp),

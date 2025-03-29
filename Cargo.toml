@@ -49,6 +49,7 @@ compiler_builtins = ["dep:compiler_builtins"]
 core = ["dep:core"]
 libc = ["dep:libc"]
 spin = ["dep:spin"]
+in-kernel = []
 
 [profile.release]
 debug = true
